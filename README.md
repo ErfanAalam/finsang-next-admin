@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Finsang Admin Dashboard (Next.js)
 
-## Getting Started
+This is the Next.js version of the Finsang Admin Dashboard, converted from the original React app.
 
-First, run the development server:
+## Features
+
+- **Products Management**: Add, edit, and manage products with detailed information including benefits, terms, FAQs, and payout structures
+- **Grow Management**: Manage grow categories and posters
+- **Training Management**: Manage training categories and videos
+- **Dark Mode**: Toggle between light and dark themes
+- **Responsive Design**: Works on desktop and mobile devices
+
+## Setup Instructions
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Environment Variables
+
+Create a `.env.local` file in the root directory with your Supabase credentials:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url_here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+```
+
+### 3. Database Schema
+
+Make sure your Supabase database has the following tables:
+
+- `products` - Product information
+- `productypes` - Product categories
+- `grow_categories` - Grow categories
+- `grow_posters` - Grow posters
+- `training_categories` - Training categories
+- `training_videos` - Training videos
+
+### 4. Run the Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/
+│   ├── layout.tsx          # Root layout with theme provider
+│   └── page.tsx            # Main dashboard page
+├── components/
+│   ├── Header.tsx          # Header with dark mode toggle
+│   ├── ProductsTab.tsx     # Products management
+│   ├── GrowTab.tsx         # Grow management
+│   └── TrainingsTab.tsx    # Training management
+└── lib/
+    └── supabase.ts         # Supabase client configuration
+```
 
-## Learn More
+## Key Changes from React to Next.js
 
-To learn more about Next.js, take a look at the following resources:
+1. **File Structure**: Converted to Next.js App Router structure
+2. **Client Components**: Added `'use client'` directive to interactive components
+3. **Environment Variables**: Changed from `VITE_` to `NEXT_PUBLIC_` prefix
+4. **Routing**: Using Next.js built-in routing instead of React Router
+5. **Build System**: Using Next.js build system instead of Vite
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Technologies Used
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Next.js 15** - React framework
+- **TypeScript** - Type safety
+- **Material-UI** - UI components
+- **Supabase** - Backend and database
+- **Tailwind CSS** - Utility-first CSS framework
 
-## Deploy on Vercel
+## Available Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deployment
+
+The app can be deployed to Vercel, Netlify, or any other platform that supports Next.js applications.
