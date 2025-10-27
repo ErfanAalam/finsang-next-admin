@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Box,
   Container,
@@ -20,8 +20,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  FormHelperText
-} from '@mui/material';
+  FormHelperText,
+} from "@mui/material";
 
 interface ProductData {
   id: string;
@@ -33,7 +33,7 @@ interface ProductData {
   sender_phone?: string;
 }
 
-export default function SharedProductForm() {
+function SharedProductFormContent() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -41,43 +41,47 @@ export default function SharedProductForm() {
   const [success, setSuccess] = useState(false);
   const [finsangId, setFinsangId] = useState<number | null>(null);
   const [productData, setProductData] = useState<ProductData | null>(null);
-  
+
   const [formData, setFormData] = useState({
-    name: '',
-    mobile: '',
-    email: '',
-    income: '',
-    pincode: '',
-    age: '',
-    dateOfBirth: '',
-    pancard: '',
-    employmentStatus: '',
-    companyName: ''
+    name: "",
+    mobile: "",
+    email: "",
+    income: "",
+    pincode: "",
+    age: "",
+    dateOfBirth: "",
+    pancard: "",
+    employmentStatus: "",
+    companyName: "",
   });
 
   useEffect(() => {
     const fetchProductData = async () => {
       try {
-        const productId = searchParams.get('productId');
-        const senderId = searchParams.get('senderId');
-        
+        const productId = searchParams.get("productId");
+        const senderId = searchParams.get("senderId");
+
         if (!productId) {
-          setError('Product ID is required');
+          setError("Product ID is required");
           setLoading(false);
           return;
         }
 
         // Fetch product data from your API
-        const response = await fetch(`/api/shared-products/get-product?productId=${productId}&senderId=${senderId || ''}`);
-        
+        const response = await fetch(
+          `/api/shared-products/get-product?productId=${productId}&senderId=${
+            senderId || ""
+          }`
+        );
+
         if (!response.ok) {
-          throw new Error('Failed to fetch product data');
+          throw new Error("Failed to fetch product data");
         }
 
         const data = await response.json();
         setProductData(data);
       } catch (err) {
-        setError('Failed to load product information');
+        setError("Failed to load product information");
         console.error(err);
       } finally {
         setLoading(false);
@@ -87,70 +91,78 @@ export default function SharedProductForm() {
     fetchProductData();
   }, [searchParams]);
 
-  const handleInputChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: event.target.value
-    }));
-  };
+  const handleInputChange =
+    (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: event.target.value,
+      }));
+    };
 
   const handleSelectChange = (field: string) => (event: any) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: event.target.value
+      [field]: event.target.value,
     }));
   };
 
   const validateForm = () => {
-    if (!formData.name.trim()) return 'Name is required';
-    if (!formData.mobile.trim()) return 'Mobile number is required';
-    if (!formData.email.trim()) return 'Email is required';
-    if (!formData.pincode.trim()) return 'Pincode is required';
-    if (!formData.age.trim()) return 'Age is required';
-    if (!formData.dateOfBirth.trim()) return 'Date of birth is required';
-    if (!formData.pancard.trim()) return 'PAN card is required';
-    if (!formData.employmentStatus) return 'Employment status is required';
-    if (formData.employmentStatus === 'employed' && !formData.companyName.trim()) {
-      return 'Company name is required for employed individuals';
+    if (!formData.name.trim()) return "Name is required";
+    if (!formData.mobile.trim()) return "Mobile number is required";
+    if (!formData.email.trim()) return "Email is required";
+    if (!formData.pincode.trim()) return "Pincode is required";
+    if (!formData.age.trim()) return "Age is required";
+    if (!formData.dateOfBirth.trim()) return "Date of birth is required";
+    if (!formData.pancard.trim()) return "PAN card is required";
+    if (!formData.employmentStatus) return "Employment status is required";
+    if (
+      formData.employmentStatus === "employed" &&
+      !formData.companyName.trim()
+    ) {
+      return "Company name is required for employed individuals";
     }
-    
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) return 'Please enter a valid email address';
-    
+    if (!emailRegex.test(formData.email))
+      return "Please enter a valid email address";
+
     const mobileRegex = /^[6-9]\d{9}$/;
-    if (!mobileRegex.test(formData.mobile)) return 'Please enter a valid 10-digit mobile number';
-    
+    if (!mobileRegex.test(formData.mobile))
+      return "Please enter a valid 10-digit mobile number";
+
     const pincodeRegex = /^[1-9][0-9]{5}$/;
-    if (!pincodeRegex.test(formData.pincode)) return 'Please enter a valid 6-digit pincode';
-    
+    if (!pincodeRegex.test(formData.pincode))
+      return "Please enter a valid 6-digit pincode";
+
     const age = parseInt(formData.age);
-    if (isNaN(age) || age < 18 || age > 100) return 'Please enter a valid age between 18 and 100';
-    
+    if (isNaN(age) || age < 18 || age > 100)
+      return "Please enter a valid age between 18 and 100";
+
     const pancardRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     if (!pancardRegex.test(formData.pancard.toUpperCase())) {
-      return 'Please enter a valid PAN card number (e.g., ABCDE1234F)';
+      return "Please enter a valid PAN card number (e.g., ABCDE1234F)";
     }
-    
+
     // Validate date of birth
     const dob = new Date(formData.dateOfBirth);
     const today = new Date();
     let ageFromDob = today.getFullYear() - dob.getFullYear();
     const monthDiff = today.getMonth() - dob.getMonth();
-    
+
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
       ageFromDob--;
     }
-    
+
     if (ageFromDob < 18 || ageFromDob > 100) {
-      return 'Date of birth must correspond to an age between 18 and 100 years';
+      return "Date of birth must correspond to an age between 18 and 100 years";
     }
-    
+
     return null;
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     const validationError = validateForm();
     if (validationError) {
       setError(validationError);
@@ -161,35 +173,34 @@ export default function SharedProductForm() {
     setError(null);
 
     try {
-      const response = await fetch('/api/shared-products/submit-details', {
-        method: 'POST',
+      const response = await fetch("/api/shared-products/submit-details", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          productId: searchParams.get('productId'),
-          senderId: searchParams.get('senderId'),
-          userDetails: formData
+          productId: searchParams.get("productId"),
+          senderId: searchParams.get("senderId"),
+          userDetails: formData,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit details');
+        throw new Error("Failed to submit details");
       }
 
       const result = await response.json();
       setSuccess(true);
       setFinsangId(result.finsangId);
-      
+
       // Redirect to application process after a short delay
       setTimeout(() => {
         if (productData?.application_url) {
           window.location.href = productData.application_url;
         }
       }, 2000);
-
     } catch (err) {
-      setError('Failed to submit details. Please try again.');
+      setError("Failed to submit details. Please try again.");
       console.error(err);
     } finally {
       setSubmitting(false);
@@ -199,7 +210,12 @@ export default function SharedProductForm() {
   if (loading) {
     return (
       <Container maxWidth="sm" sx={{ mt: 4 }}>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="400px"
+        >
           <CircularProgress />
         </Box>
       </Container>
@@ -237,21 +253,33 @@ export default function SharedProductForm() {
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom align="center" color="primary">
+        <Typography
+          variant="h4"
+          component="h1"
+          gutterBottom
+          align="center"
+          color="primary"
+        >
           Apply for {productData?.name}
         </Typography>
-        
+
         {productData && (
           <Card sx={{ mb: 4 }}>
             <CardContent>
-              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
+                  gap: 2,
+                }}
+              >
                 {productData.image_url && (
-                  <Box sx={{ flex: { sm: '0 0 200px' } }}>
+                  <Box sx={{ flex: { sm: "0 0 200px" } }}>
                     <CardMedia
                       component="img"
                       image={productData.image_url}
                       alt={productData.name}
-                      sx={{ height: 200, objectFit: 'contain' }}
+                      sx={{ height: 200, objectFit: "contain" }}
                     />
                   </Box>
                 )}
@@ -264,9 +292,20 @@ export default function SharedProductForm() {
                       <Typography variant="subtitle2" gutterBottom>
                         Key Benefits:
                       </Typography>
-                      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        flexWrap="wrap"
+                        useFlexGap
+                      >
                         {productData.benefits.map((benefit, index) => (
-                          <Chip key={index} label={benefit} size="small" color="primary" variant="outlined" />
+                          <Chip
+                            key={index}
+                            label={benefit}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
                         ))}
                       </Stack>
                     </Box>
@@ -274,7 +313,8 @@ export default function SharedProductForm() {
                   {productData.sender_name && (
                     <Typography variant="body2" color="text.secondary">
                       Shared by: {productData.sender_name}
-                      {productData.sender_phone && ` (${productData.sender_phone})`}
+                      {productData.sender_phone &&
+                        ` (${productData.sender_phone})`}
                     </Typography>
                   )}
                 </Box>
@@ -294,18 +334,24 @@ export default function SharedProductForm() {
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
             {/* Personal Information */}
             <Typography variant="h6" color="primary" sx={{ mt: 2, mb: 1 }}>
               Personal Information
             </Typography>
-            
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 3 }}>
+
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 3,
+              }}
+            >
               <TextField
                 fullWidth
                 label="Full Name"
                 value={formData.name}
-                onChange={handleInputChange('name')}
+                onChange={handleInputChange("name")}
                 required
                 variant="outlined"
               />
@@ -313,20 +359,26 @@ export default function SharedProductForm() {
                 fullWidth
                 label="Mobile Number"
                 value={formData.mobile}
-                onChange={handleInputChange('mobile')}
+                onChange={handleInputChange("mobile")}
                 required
                 variant="outlined"
                 placeholder="10-digit number"
               />
             </Box>
-            
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 3 }}>
+
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 3,
+              }}
+            >
               <TextField
                 fullWidth
                 label="Email Address"
                 type="email"
                 value={formData.email}
-                onChange={handleInputChange('email')}
+                onChange={handleInputChange("email")}
                 required
                 variant="outlined"
               />
@@ -334,30 +386,38 @@ export default function SharedProductForm() {
                 fullWidth
                 label="PAN Card Number"
                 value={formData.pancard}
-                onChange={handleInputChange('pancard')}
+                onChange={handleInputChange("pancard")}
                 required
                 variant="outlined"
                 placeholder="ABCDE1234F"
-                inputProps={{ 
-                  style: { textTransform: 'uppercase' },
-                  maxLength: 10
+                inputProps={{
+                  style: { textTransform: "uppercase" },
+                  maxLength: 10,
                 }}
               />
             </Box>
-            
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 3 }}>
+
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 3,
+              }}
+            >
               <TextField
                 fullWidth
                 label="Date of Birth"
                 type="date"
                 value={formData.dateOfBirth}
-                onChange={handleInputChange('dateOfBirth')}
+                onChange={handleInputChange("dateOfBirth")}
                 required
                 variant="outlined"
                 InputLabelProps={{ shrink: true }}
-                inputProps={{ 
-                  max: new Date().toISOString().split('T')[0],
-                  min: new Date(new Date().getFullYear() - 100, 0, 1).toISOString().split('T')[0]
+                inputProps={{
+                  max: new Date().toISOString().split("T")[0],
+                  min: new Date(new Date().getFullYear() - 100, 0, 1)
+                    .toISOString()
+                    .split("T")[0],
                 }}
               />
               <TextField
@@ -365,20 +425,26 @@ export default function SharedProductForm() {
                 label="Age"
                 type="number"
                 value={formData.age}
-                onChange={handleInputChange('age')}
+                onChange={handleInputChange("age")}
                 required
                 variant="outlined"
                 inputProps={{ min: 18, max: 100 }}
               />
             </Box>
-            
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 3 }}>
+
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 3,
+              }}
+            >
               <TextField
                 fullWidth
                 label="Monthly Income (Optional)"
                 type="number"
                 value={formData.income}
-                onChange={handleInputChange('income')}
+                onChange={handleInputChange("income")}
                 variant="outlined"
                 placeholder="₹"
               />
@@ -386,7 +452,7 @@ export default function SharedProductForm() {
                 fullWidth
                 label="Pincode"
                 value={formData.pincode}
-                onChange={handleInputChange('pincode')}
+                onChange={handleInputChange("pincode")}
                 required
                 variant="outlined"
                 placeholder="6-digit pincode"
@@ -397,34 +463,42 @@ export default function SharedProductForm() {
             <Typography variant="h6" color="primary" sx={{ mt: 2, mb: 1 }}>
               Employment Information
             </Typography>
-            
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 3 }}>
+
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 3,
+              }}
+            >
               <FormControl fullWidth required>
                 <InputLabel>Employment Status</InputLabel>
                 <Select
                   value={formData.employmentStatus}
                   label="Employment Status"
-                  onChange={handleSelectChange('employmentStatus')}
+                  onChange={handleSelectChange("employmentStatus")}
                 >
                   <MenuItem value="employed">Employed</MenuItem>
                   <MenuItem value="unemployed">Unemployed</MenuItem>
                 </Select>
-                <FormHelperText>Please select your current employment status</FormHelperText>
+                <FormHelperText>
+                  Please select your current employment status
+                </FormHelperText>
               </FormControl>
-              
-              {formData.employmentStatus === 'employed' && (
+
+              {formData.employmentStatus === "employed" && (
                 <TextField
                   fullWidth
                   label="Company Name"
                   value={formData.companyName}
-                  onChange={handleInputChange('companyName')}
+                  onChange={handleInputChange("companyName")}
                   required
                   variant="outlined"
                   placeholder="Enter your company name"
                 />
               )}
             </Box>
-            
+
             <Button
               type="submit"
               fullWidth
@@ -433,11 +507,34 @@ export default function SharedProductForm() {
               disabled={submitting}
               sx={{ mt: 2 }}
             >
-              {submitting ? 'Submitting...' : 'Submit & Continue to Application'}
+              {submitting
+                ? "Submitting..."
+                : "Submit & Continue to Application"}
             </Button>
           </Box>
         </Box>
       </Paper>
     </Container>
   );
-} 
+}
+
+export default function SharedProductForm() {
+  return (
+    <Suspense
+      fallback={
+        <Container maxWidth="sm" sx={{ mt: 4 }}>
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            minHeight="400px"
+          >
+            <CircularProgress />
+          </Box>
+        </Container>
+      }
+    >
+      <SharedProductFormContent />
+    </Suspense>
+  );
+}

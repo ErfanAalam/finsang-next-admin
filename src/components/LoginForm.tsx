@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -9,25 +9,25 @@ import {
   Paper,
   Alert,
   CircularProgress,
-} from '@mui/material';
-import { useAuth } from '../lib/auth-context';
+} from "@mui/material";
+import { useAuth } from "../lib/auth-context";
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       await login(email, password);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Login failed');
+      setError(error instanceof Error ? error.message : "Login failed");
     } finally {
       setLoading(false);
     }
@@ -36,25 +36,30 @@ const LoginForm: React.FC = () => {
   return (
     <Box
       sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        backgroundColor: '#f5f5f5',
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        backgroundColor: "#f5f5f5",
       }}
     >
       <Paper
         elevation={3}
         sx={{
           padding: 4,
-          width: '100%',
+          width: "100%",
           maxWidth: 400,
         }}
       >
         <Typography variant="h4" component="h1" gutterBottom align="center">
           FinsangMart Admin
         </Typography>
-        <Typography variant="body2" color="text.secondary" align="center" gutterBottom>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          align="center"
+          gutterBottom
+        >
           Sign in to access the admin panel
         </Typography>
 
@@ -100,7 +105,7 @@ const LoginForm: React.FC = () => {
             sx={{ mt: 3, mb: 2 }}
             disabled={loading}
           >
-            {loading ? <CircularProgress size={24} /> : 'Sign In'}
+            {loading ? <CircularProgress size={24} /> : "Sign In"}
           </Button>
         </Box>
       </Paper>
@@ -108,4 +113,4 @@ const LoginForm: React.FC = () => {
   );
 };
 
-export default LoginForm; 
+export default LoginForm;

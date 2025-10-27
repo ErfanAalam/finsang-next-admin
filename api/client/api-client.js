@@ -4,7 +4,7 @@
  */
 
 class FinsangMartAPI {
-  constructor(baseURL = 'http://localhost:3001/api') {
+  constructor(baseURL = `${process.env.BASE_URL}`) {
     // constructor(baseURL = 'http://172.24.132.187:3001/api') {
     this.baseURL = baseURL;
     this.token = null;
@@ -26,10 +26,10 @@ class FinsangMartAPI {
     const url = `${this.baseURL}${endpoint}`;
     const config = {
       headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
+        "Content-Type": "application/json",
+        ...options.headers,
       },
-      ...options
+      ...options,
     };
 
     if (this.token) {
@@ -52,53 +52,53 @@ class FinsangMartAPI {
 
   // Admin Authentication Methods
   async adminSignup(email, password, name) {
-    return this.request('/auth/admin/signup', {
-      method: 'POST',
-      body: JSON.stringify({ email, password, name })
+    return this.request("/auth/admin/signup", {
+      method: "POST",
+      body: JSON.stringify({ email, password, name }),
     });
   }
 
   async adminSignin(email, password) {
-    const response = await this.request('/auth/admin/signin', {
-      method: 'POST',
-      body: JSON.stringify({ email, password })
+    const response = await this.request("/auth/admin/signin", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
     });
-    
+
     if (response.token) {
       this.setToken(response.token);
     }
-    
+
     return response;
   }
 
   // Authentication Methods
   async getSession() {
-    return this.request('/auth/session');
+    return this.request("/auth/session");
   }
 
   async signout() {
-    const response = await this.request('/auth/signout', {
-      method: 'POST'
+    const response = await this.request("/auth/signout", {
+      method: "POST",
     });
     this.clearAuth();
     return response;
   }
 
   async updateUserProfile(name, profileImageUrl) {
-    return this.request('/auth/user', {
-      method: 'POST',
-      body: JSON.stringify({ name, profile_image_url: profileImageUrl })
+    return this.request("/auth/user", {
+      method: "POST",
+      body: JSON.stringify({ name, profile_image_url: profileImageUrl }),
     });
   }
 
   async getUserProfile() {
-    return this.request('/auth/user');
+    return this.request("/auth/user");
   }
 
   async updateUserRole(userId, role) {
     return this.request(`/auth/user/${userId}/role`, {
-      method: 'PUT',
-      body: JSON.stringify({ role })
+      method: "PUT",
+      body: JSON.stringify({ role }),
     });
   }
 
@@ -118,46 +118,46 @@ class FinsangMartAPI {
   }
 
   async createProduct(productData) {
-    return this.request('/products', {
-      method: 'POST',
-      body: JSON.stringify(productData)
+    return this.request("/products", {
+      method: "POST",
+      body: JSON.stringify(productData),
     });
   }
 
   async updateProduct(id, productData) {
     return this.request(`/products/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(productData)
+      method: "PUT",
+      body: JSON.stringify(productData),
     });
   }
 
   async deleteProduct(id) {
     return this.request(`/products/${id}`, {
-      method: 'DELETE'
+      method: "DELETE",
     });
   }
 
   async getProductTypes() {
-    return this.request('/products/types/all');
+    return this.request("/products/types/all");
   }
 
   async createProductType(name, description) {
-    return this.request('/products/types', {
-      method: 'POST',
-      body: JSON.stringify({ name, description })
+    return this.request("/products/types", {
+      method: "POST",
+      body: JSON.stringify({ name, description }),
     });
   }
 
   async deleteProductType(type) {
     return this.request(`/products/types/${encodeURIComponent(type)}`, {
-      method: 'DELETE'
+      method: "DELETE",
     });
   }
 
   async compareProducts(productIds) {
-    return this.request('/products/compare', {
-      method: 'POST',
-      body: JSON.stringify({ productIds })
+    return this.request("/products/compare", {
+      method: "POST",
+      body: JSON.stringify({ productIds }),
     });
   }
 
@@ -167,15 +167,15 @@ class FinsangMartAPI {
   }
 
   async createTrainingCategory(categoryData) {
-    return this.request('/training/categories', {
-      method: 'POST',
-      body: JSON.stringify(categoryData)
+    return this.request("/training/categories", {
+      method: "POST",
+      body: JSON.stringify(categoryData),
     });
   }
 
   async deleteTrainingCategory(id) {
     return this.request(`/training/categories/${id}`, {
-      method: 'DELETE'
+      method: "DELETE",
     });
   }
 
@@ -184,26 +184,28 @@ class FinsangMartAPI {
   }
 
   async getTrainingVideosByCategory(categoryId, page = 1, limit = 10) {
-    return this.request(`/training/videos/${categoryId}?page=${page}&limit=${limit}`);
+    return this.request(
+      `/training/videos/${categoryId}?page=${page}&limit=${limit}`
+    );
   }
 
   async createTrainingVideo(videoData) {
-    return this.request('/training/videos', {
-      method: 'POST',
-      body: JSON.stringify(videoData)
+    return this.request("/training/videos", {
+      method: "POST",
+      body: JSON.stringify(videoData),
     });
   }
 
   async updateTrainingVideo(id, videoData) {
     return this.request(`/training/videos/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(videoData)
+      method: "PUT",
+      body: JSON.stringify(videoData),
     });
   }
 
   async deleteTrainingVideo(id) {
     return this.request(`/training/videos/${id}`, {
-      method: 'DELETE'
+      method: "DELETE",
     });
   }
 
@@ -217,15 +219,15 @@ class FinsangMartAPI {
   }
 
   async createGrowCategory(categoryData) {
-    return this.request('/grow/categories', {
-      method: 'POST',
-      body: JSON.stringify(categoryData)
+    return this.request("/grow/categories", {
+      method: "POST",
+      body: JSON.stringify(categoryData),
     });
   }
 
   async deleteGrowCategory(id) {
     return this.request(`/grow/categories/${id}`, {
-      method: 'DELETE'
+      method: "DELETE",
     });
   }
 
@@ -234,26 +236,28 @@ class FinsangMartAPI {
   }
 
   async getGrowPostersByCategory(categoryId, page = 1, limit = 10) {
-    return this.request(`/grow/posters/${categoryId}?page=${page}&limit=${limit}`);
+    return this.request(
+      `/grow/posters/${categoryId}?page=${page}&limit=${limit}`
+    );
   }
 
   async createGrowPoster(posterData) {
-    return this.request('/grow/posters', {
-      method: 'POST',
-      body: JSON.stringify(posterData)
+    return this.request("/grow/posters", {
+      method: "POST",
+      body: JSON.stringify(posterData),
     });
   }
 
   async updateGrowPoster(id, posterData) {
     return this.request(`/grow/posters/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(posterData)
+      method: "PUT",
+      body: JSON.stringify(posterData),
     });
   }
 
   async deleteGrowPoster(id) {
     return this.request(`/grow/posters/${id}`, {
-      method: 'DELETE'
+      method: "DELETE",
     });
   }
 
@@ -264,15 +268,15 @@ class FinsangMartAPI {
   // Storage Methods
   async uploadProfileImage(file) {
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append("image", file);
 
     const url = `${this.baseURL}/storage/profile-image`;
     const config = {
-      method: 'POST',
+      method: "POST",
       headers: {
-        Authorization: `Bearer ${this.token}`
+        Authorization: `Bearer ${this.token}`,
       },
-      body: formData
+      body: formData,
     };
 
     const response = await fetch(url, config);
@@ -287,15 +291,15 @@ class FinsangMartAPI {
 
   async uploadProductImage(file) {
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append("image", file);
 
     const url = `${this.baseURL}/storage/product-image`;
     const config = {
-      method: 'POST',
+      method: "POST",
       headers: {
-        Authorization: `Bearer ${this.token}`
+        Authorization: `Bearer ${this.token}`,
       },
-      body: formData
+      body: formData,
     };
 
     const response = await fetch(url, config);
@@ -310,15 +314,15 @@ class FinsangMartAPI {
 
   async uploadGrowPoster(file) {
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append("image", file);
 
     const url = `${this.baseURL}/storage/grow-poster`;
     const config = {
-      method: 'POST',
+      method: "POST",
       headers: {
-        Authorization: `Bearer ${this.token}`
+        Authorization: `Bearer ${this.token}`,
       },
-      body: formData
+      body: formData,
     };
 
     const response = await fetch(url, config);
@@ -331,18 +335,18 @@ class FinsangMartAPI {
     return data;
   }
 
-  async uploadGeneralFile(file, folder = 'general') {
+  async uploadGeneralFile(file, folder = "general") {
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('folder', folder);
+    formData.append("file", file);
+    formData.append("folder", folder);
 
     const url = `${this.baseURL}/storage/upload`;
     const config = {
-      method: 'POST',
+      method: "POST",
       headers: {
-        Authorization: `Bearer ${this.token}`
+        Authorization: `Bearer ${this.token}`,
       },
-      body: formData
+      body: formData,
     };
 
     const response = await fetch(url, config);
@@ -356,32 +360,40 @@ class FinsangMartAPI {
   }
 
   async deleteProfileImage(fileName) {
-    return this.request('/storage/profile-image', {
-      method: 'DELETE',
-      body: JSON.stringify({ fileName })
+    return this.request("/storage/profile-image", {
+      method: "DELETE",
+      body: JSON.stringify({ fileName }),
     });
   }
 
   async deleteProductImage(fileName) {
-    return this.request(`/storage/product-image/${encodeURIComponent(fileName)}`, {
-      method: 'DELETE'
-    });
+    return this.request(
+      `/storage/product-image/${encodeURIComponent(fileName)}`,
+      {
+        method: "DELETE",
+      }
+    );
   }
 
   async deleteGrowPoster(fileName) {
-    return this.request(`/storage/grow-poster/${encodeURIComponent(fileName)}`, {
-      method: 'DELETE'
-    });
+    return this.request(
+      `/storage/grow-poster/${encodeURIComponent(fileName)}`,
+      {
+        method: "DELETE",
+      }
+    );
   }
 
   async deleteFile(fileName) {
     return this.request(`/storage/file/${encodeURIComponent(fileName)}`, {
-      method: 'DELETE'
+      method: "DELETE",
     });
   }
 
   async getProductImageInfo(fileName) {
-    return this.request(`/storage/product-image/${encodeURIComponent(fileName)}`);
+    return this.request(
+      `/storage/product-image/${encodeURIComponent(fileName)}`
+    );
   }
 
   async getGrowPosterInfo(fileName) {
@@ -394,8 +406,8 @@ class FinsangMartAPI {
 }
 
 // Export for different environments
-if (typeof module !== 'undefined' && module.exports) {
+if (typeof module !== "undefined" && module.exports) {
   module.exports = FinsangMartAPI;
-} else if (typeof window !== 'undefined') {
+} else if (typeof window !== "undefined") {
   window.FinsangMartAPI = FinsangMartAPI;
-} 
+}

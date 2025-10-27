@@ -7,6 +7,7 @@ This is the Next.js version of the Finsang Admin Dashboard, converted from the o
 - **Products Management**: Add, edit, and manage products with detailed information including benefits, terms, FAQs, and payout structures
 - **Grow Management**: Manage grow categories and posters
 - **Training Management**: Manage training categories and videos
+- **Banner Management**: Create and manage promotional banners with scheduling and positioning options
 - **Dark Mode**: Toggle between light and dark themes
 - **Responsive Design**: Works on desktop and mobile devices
 
@@ -37,8 +38,18 @@ Make sure your Supabase database has the following tables:
 - `grow_posters` - Grow posters
 - `training_categories` - Training categories
 - `training_videos` - Training videos
+- `banners` - Banner management with scheduling and positioning
 
-### 4. Run the Development Server
+### 4. Supabase Storage Setup
+
+Create a storage bucket named `banners` in your Supabase project:
+
+1. Go to Storage in your Supabase dashboard
+2. Create a new bucket named `banners`
+3. Set it to public for banner images
+4. Configure RLS policies as needed
+
+### 5. Run the Development Server
 
 ```bash
 npm run dev
@@ -57,7 +68,8 @@ src/
 │   ├── Header.tsx          # Header with dark mode toggle
 │   ├── ProductsTab.tsx     # Products management
 │   ├── GrowTab.tsx         # Grow management
-│   └── TrainingsTab.tsx    # Training management
+│   ├── TrainingsTab.tsx    # Training management
+│   └── BannersTab.tsx      # Banner management
 └── lib/
     └── supabase.ts         # Supabase client configuration
 ```

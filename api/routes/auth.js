@@ -1,26 +1,32 @@
-const express = require('express');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const { supabase } = require('../config/supabase');
-const { authenticateToken, authenticateAdmin } = require('../middleware/auth');
-const { validateUser, validateAdminSignup, validateAdminSignin } = require('../middleware/validation');
+const express = require("express");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const { supabase } = require("../config/supabase");
+const { authenticateToken, authenticateAdmin } = require("../middleware/auth");
+const {
+  validateUser,
+  validateAdminSignup,
+  validateAdminSignin,
+} = require("../middleware/validation");
 
 const router = express.Router();
 
 // Admin sign up (only for initial admin creation)
-router.post('/admin/signup', validateAdminSignup, async (req, res) => {
+router.post("/admin/signup", validateAdminSignup, async (req, res) => {
   try {
     const { email, password, name } = req.body;
-    
+
     // Check if admin already exists by trying to sign in
     try {
       const { data: existingUser } = await supabase.auth.signInWithPassword({
         email: email,
-        password: password
+        password: password,
       });
-      
-      if (existingUser.user?.user_metadata?.role === 'admin') {
-        return res.status(403).json({ error: 'Admin already exists. Use signin instead.' });
+
+      if (existingUser.user?.user_metadata?.role === "admin") {
+        return res
+          .status(403)
+          .json({ error: "Admin already exists. Use signin instead." });
       }
     } catch (error) {
       // User doesn't exist, continue with signup
@@ -33,9 +39,9 @@ router.post('/admin/signup', validateAdminSignup, async (req, res) => {
       options: {
         data: {
           name: name,
-          role: 'admin'
-        }
-      }
+          role: "admin",
+        },
+      },
     });
 
     if (error) {
@@ -44,111 +50,111 @@ router.post('/admin/signup', validateAdminSignup, async (req, res) => {
 
     // Create JWT token
     const jwtToken = jwt.sign(
-      { 
+      {
         userId: data.user.id,
         email: data.user.email,
-        role: 'admin'
+        role: "admin",
       },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
     );
 
     res.status(201).json({
-      message: 'Admin created successfully',
+      message: "Admin created successfully",
       user: {
         id: data.user.id,
         email: data.user.email,
         name: data.user.user_metadata?.name,
-        role: data.user.user_metadata?.role
+        role: data.user.user_metadata?.role,
       },
-      token: jwtToken
+      token: jwtToken,
     });
   } catch (error) {
-    console.error('Admin signup error:', error);
-    res.status(500).json({ error: 'Failed to create admin' });
+    console.error("Admin signup error:", error);
+    res.status(500).json({ error: "Failed to create admin" });
   }
 });
 
 // Admin sign in
-router.post('/admin/signin', validateAdminSignin, async (req, res) => {
+router.post("/admin/signin", validateAdminSignin, async (req, res) => {
   try {
     const { email, password } = req.body;
 
     // Sign in with email and password
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
-      password: password
+      password: password,
     });
 
     if (error) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
     // Check if user has admin role
     const userRole = data.user.user_metadata?.role;
-    if (!userRole || !['admin', 'moderator'].includes(userRole)) {
-      return res.status(403).json({ error: 'Admin access required' });
+    if (!userRole || !["admin", "moderator"].includes(userRole)) {
+      return res.status(403).json({ error: "Admin access required" });
     }
 
     // Create JWT token
     const jwtToken = jwt.sign(
-      { 
+      {
         userId: data.user.id,
         email: data.user.email,
-        role: userRole
+        role: userRole,
       },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
     );
 
     res.json({
-      message: 'Admin signed in successfully',
+      message: "Admin signed in successfully",
       user: {
         id: data.user.id,
         email: data.user.email,
         name: data.user.user_metadata?.name,
-        role: userRole
+        role: userRole,
       },
-      token: jwtToken
+      token: jwtToken,
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to sign in' });
+    res.status(500).json({ error: "Failed to sign in" });
   }
 });
 
 // Get current user session
-router.get('/session', authenticateToken, async (req, res) => {
+router.get("/session", authenticateToken, async (req, res) => {
   try {
     res.json({
       user: {
         id: req.user.id,
         email: req.user.email,
         name: req.user.user_metadata?.name,
-        role: req.user.user_metadata?.role || 'user'
-      }
+        role: req.user.user_metadata?.role || "user",
+      },
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get session' });
+    res.status(500).json({ error: "Failed to get session" });
   }
 });
 
 // Sign out user
-router.post('/signout', authenticateToken, async (req, res) => {
+router.post("/signout", authenticateToken, async (req, res) => {
   try {
     const { error } = await supabase.auth.signOut();
-    
+
     if (error) {
       return res.status(400).json({ error: error.message });
     }
 
-    res.json({ message: 'Signed out successfully' });
+    res.json({ message: "Signed out successfully" });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to sign out' });
+    res.status(500).json({ error: "Failed to sign out" });
   }
 });
 
 // Create or update user profile
-router.post('/user', authenticateToken, validateUser, async (req, res) => {
+router.post("/user", authenticateToken, validateUser, async (req, res) => {
   try {
     const { name, profile_image_url } = req.body;
     const userId = req.user.id;
@@ -157,8 +163,8 @@ router.post('/user', authenticateToken, validateUser, async (req, res) => {
     const { data, error } = await supabase.auth.updateUser({
       data: {
         name: name,
-        profile_image_url: profile_image_url
-      }
+        profile_image_url: profile_image_url,
+      },
     });
 
     if (error) {
@@ -166,48 +172,50 @@ router.post('/user', authenticateToken, validateUser, async (req, res) => {
     }
 
     res.json({
-      message: 'User profile updated successfully',
+      message: "User profile updated successfully",
       user: {
         id: data.user.id,
         email: data.user.email,
         name: data.user.user_metadata?.name,
-        role: data.user.user_metadata?.role || 'user'
-      }
+        role: data.user.user_metadata?.role || "user",
+      },
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to update user profile' });
+    res.status(500).json({ error: "Failed to update user profile" });
   }
 });
 
 // Get user profile
-router.get('/user', authenticateToken, async (req, res) => {
+router.get("/user", authenticateToken, async (req, res) => {
   try {
     res.json({
       user: {
         id: req.user.id,
         email: req.user.email,
         name: req.user.user_metadata?.name,
-        role: req.user.user_metadata?.role || 'user'
-      }
+        role: req.user.user_metadata?.role || "user",
+      },
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get user profile' });
+    res.status(500).json({ error: "Failed to get user profile" });
   }
 });
 
 // Update user role (Admin only)
-router.put('/user/:userId/role', authenticateAdmin, async (req, res) => {
+router.put("/user/:userId/role", authenticateAdmin, async (req, res) => {
   try {
     const { userId } = req.params;
     const { role } = req.body;
 
-    if (!role || !['user', 'admin', 'moderator'].includes(role)) {
-      return res.status(400).json({ error: 'Valid role required (user, admin, moderator)' });
+    if (!role || !["user", "admin", "moderator"].includes(role)) {
+      return res
+        .status(400)
+        .json({ error: "Valid role required (user, admin, moderator)" });
     }
 
     // Update user role in metadata
     const { data, error } = await supabase.auth.admin.updateUserById(userId, {
-      user_metadata: { role: role }
+      user_metadata: { role: role },
     });
 
     if (error) {
@@ -215,20 +223,20 @@ router.put('/user/:userId/role', authenticateAdmin, async (req, res) => {
     }
 
     res.json({
-      message: 'User role updated successfully',
+      message: "User role updated successfully",
       user: {
         id: data.user.id,
         email: data.user.email,
-        role: data.user.user_metadata?.role
-      }
+        role: data.user.user_metadata?.role,
+      },
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to update user role' });
+    res.status(500).json({ error: "Failed to update user role" });
   }
 });
 
 // Get all users (Admin only)
-router.get('/users', authenticateAdmin, async (req, res) => {
+router.get("/users", authenticateAdmin, async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
@@ -244,22 +252,22 @@ router.get('/users', authenticateAdmin, async (req, res) => {
     const paginatedUsers = data.users.slice(offset, offset + parseInt(limit));
 
     res.json({
-      users: paginatedUsers.map(user => ({
+      users: paginatedUsers.map((user) => ({
         id: user.id,
         email: user.email,
         name: user.user_metadata?.name,
-        role: user.user_metadata?.role || 'user',
-        created_at: user.created_at
+        role: user.user_metadata?.role || "user",
+        created_at: user.created_at,
       })),
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
-        total: data.users.length
-      }
+        total: data.users.length,
+      },
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get users' });
+    res.status(500).json({ error: "Failed to get users" });
   }
 });
 
-module.exports = router; 
+module.exports = router;

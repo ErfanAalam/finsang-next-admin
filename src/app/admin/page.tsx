@@ -60,13 +60,15 @@ import {
   Add as AddIcon,
   Settings as SettingsIcon,
   Analytics as AnalyticsIcon,
-  Business as BusinessIcon
+  Business as BusinessIcon,
+  Image as ImageIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../lib/auth-context';
 import Header from '../../components/Header';
 import ProductsTab from '../../components/ProductsTab';
 import GrowTab from '../../components/GrowTab';
 import TrainingsTab from '../../components/TrainingsTab';
+import BannersTab from '../../components/BannersTab';
 import LeadsManagement from './manage/leads';
 
 // Placeholder components for Analytics and Settings
@@ -317,13 +319,16 @@ export default function AdminDashboard() {
         setTabValue(1); // Switch to Products tab
         break;
       case 'view-leads':
-        setTabValue(4); // Switch to Leads Management tab
+        setTabValue(5); // Switch to Leads Management tab
+        break;
+      case 'manage-banners':
+        setTabValue(4); // Switch to Banners tab
         break;
       case 'configure-settings':
-        setTabValue(6); // Switch to Settings tab
+        setTabValue(7); // Switch to Settings tab
         break;
       case 'view-analytics':
-        setTabValue(5); // Switch to Analytics tab
+        setTabValue(6); // Switch to Analytics tab
         break;
       default:
         break;
@@ -745,6 +750,24 @@ export default function AdminDashboard() {
                     </Button>
                     <Button
                       variant="outlined"
+                      startIcon={<ImageIcon />}
+                      fullWidth
+                      onClick={() => handleQuickAction('manage-banners')}
+                      sx={{
+                        justifyContent: 'flex-start',
+                        py: 1.5,
+                        borderRadius: 2,
+                        borderColor: '#e0e0e0',
+                        '&:hover': {
+                          borderColor: '#e91e63',
+                          bgcolor: '#fce4ec'
+                        }
+                      }}
+                    >
+                      Manage Banners
+                    </Button>
+                    <Button
+                      variant="outlined"
                       startIcon={<AnalyticsIcon />}
                       fullWidth
                       onClick={() => handleQuickAction('view-analytics')}
@@ -849,22 +872,28 @@ export default function AdminDashboard() {
               {...a11yProps(3)}
             />
             <Tab
+              label="Banners"
+              icon={<ImageIcon />}
+              iconPosition="start"
+              {...a11yProps(4)}
+            />
+            <Tab
               label="Leads Management"
               icon={<PeopleIcon />}
               iconPosition="start"
-              {...a11yProps(4)}
+              {...a11yProps(5)}
             />
             <Tab
               label="Analytics"
               icon={<AssessmentIcon />}
               iconPosition="start"
-              {...a11yProps(5)}
+              {...a11yProps(6)}
             />
             <Tab
               label="Settings"
               icon={<AppsIcon />}
               iconPosition="start"
-              {...a11yProps(6)}
+              {...a11yProps(7)}
             />
           </Tabs>
           
@@ -885,14 +914,18 @@ export default function AdminDashboard() {
           </TabPanel>
           
           <TabPanel value={tabValue} index={4}>
-            <LeadsManagement />
+            <BannersTab />
           </TabPanel>
           
           <TabPanel value={tabValue} index={5}>
-            <AnalyticsManagement />
+            <LeadsManagement />
           </TabPanel>
           
           <TabPanel value={tabValue} index={6}>
+            <AnalyticsManagement />
+          </TabPanel>
+          
+          <TabPanel value={tabValue} index={7}>
             <SettingsManagement />
           </TabPanel>
         </Paper>

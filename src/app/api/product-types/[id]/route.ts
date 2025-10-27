@@ -3,13 +3,14 @@ import { supabase } from '@/lib/supabase';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const { error } = await supabase
       .from('productypes')
       .delete()
-      .eq('id', params.id);
+      .eq('id', id);
     
     if (error) {
       console.error('Supabase error:', error);
