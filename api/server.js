@@ -38,52 +38,27 @@ app.use(
 );
 
 // CORS configuration
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [
-  "http://localhost:3000",
-  "http://172.16.0.2:8081",
-  "http://172.19.185.69:8081",
-  "http://localhost:3001",
-  "http://localhost:8081",
-  "http://localhost:19006",
-  "http://172.24.132.187:3000",
-  "http://172.24.132.187:8081",
-  "http://172.24.132.187:19006",
-  "http://10.254.86.30:3000",
-  "http://10.254.86.30:8081",
-  "http://10.254.86.30:19006",
-  "http://10.254.86.30:3001",
-];
+// CORS configuration
+const allowedOrigins = ["http://13.235.1.46:3000", "https://admin.finsang.in"];
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   })
 );
 
-// Rate limiting
-// const limiter = rateLimit({
-//   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-//   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // limit each IP to 100 requests per windowMs
-//   message: {
-//     error: 'Too many requests from this IP, please try again later.'
-//   },
-//   standardHeaders: true,
-//   legacyHeaders: false,
-// });
-
-// app.use(limiter);
+app.options(
+  "*",
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  })
+);
 
 // Compression middleware
 app.use(compression());
