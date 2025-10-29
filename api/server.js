@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
-const rateLimit = require("express-rate-limit");
 const compression = require("compression");
 const morgan = require("morgan");
 require("dotenv").config();
@@ -9,6 +8,8 @@ require("dotenv").config();
 // Import routes
 const authRoutes = require("./routes/auth");
 const productRoutes = require("./routes/products");
+const adminProductRoutes = require("./routes/admin-products");
+const productTypeRoutes = require("./routes/product-types");
 const trainingRoutes = require("./routes/training");
 const growRoutes = require("./routes/grow");
 const storageRoutes = require("./routes/storage");
@@ -106,6 +107,8 @@ app.get("/health", (req, res) => {
 // API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/admin/products", adminProductRoutes);
+app.use("/api/admin/product-types", productTypeRoutes);
 app.use("/api/training", trainingRoutes);
 app.use("/api/grow", growRoutes);
 app.use("/api/storage", storageRoutes);

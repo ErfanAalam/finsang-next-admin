@@ -258,7 +258,7 @@ export default function BannersTab() {
 
       <Grid container spacing={3} sx={{ padding: "20px" }}>
         {banners.map((banner) => (
-          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={banner.id}>
+          <Grid key={banner.id}>
             <Card
               sx={{
                 borderRadius: 3,
@@ -278,7 +278,11 @@ export default function BannersTab() {
                   {banner.title}
                 </Typography>
                 {banner.subtitle && (
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    gutterBottom
+                  >
                     {banner.subtitle}
                   </Typography>
                 )}
@@ -380,7 +384,7 @@ export default function BannersTab() {
               margin="normal"
               required
             />
-            
+
             <TextField
               fullWidth
               label="Subtitle"
