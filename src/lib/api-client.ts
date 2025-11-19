@@ -357,6 +357,11 @@ class FinsangMartAPI {
     return this.request(`/grow/posters/single/${id}`);
   }
 
+  // Analytics Methods
+  async getAnalyticsOverview() {
+    return this.request("/analytics/overview");
+  }
+
   // Storage Methods
   async uploadProfileImage(file: File) {
     const formData = new FormData();

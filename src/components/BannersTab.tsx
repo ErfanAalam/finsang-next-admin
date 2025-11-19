@@ -33,7 +33,6 @@ import {
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon,
 } from "@mui/icons-material";
-import { supabase } from "../lib/supabase";
 
 interface Banner {
   id: string;
@@ -230,7 +229,11 @@ export default function BannersTab() {
           variant="contained"
           startIcon={<AddIcon />}
           onClick={handleOpenDialog}
-          sx={{ borderRadius: 2 }}
+          sx={{
+            borderRadius: 2,
+            color: "white",
+            "& .MuiButton-startIcon": { color: "white" },
+          }}
         >
           Add Banner
         </Button>
@@ -357,6 +360,10 @@ export default function BannersTab() {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleOpenDialog}
+            sx={{
+              color: "white",
+              "& .MuiButton-startIcon": { color: "white" },
+            }}
           >
             Add Banner
           </Button>
@@ -489,6 +496,7 @@ export default function BannersTab() {
               !formData.title ||
               (!formData.image_url && !selectedFile)
             }
+            sx={{ color: "white" }}
           >
             {uploading ? (
               <CircularProgress size={20} />

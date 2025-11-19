@@ -19,6 +19,7 @@ const shopProductRoutes = require("./routes/shop-products");
 const qrCodeRoutes = require("./routes/qrcode");
 const finsangMartRoutes = require("./routes/finsangmart");
 const bannerRoutes = require("./routes/banners");
+const analyticsRoutes = require("./routes/analytics");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -39,7 +40,11 @@ app.use(
 
 // CORS configuration
 // CORS configuration
-const allowedOrigins = ["http://13.235.1.46:3000", "https://admin.finsang.in"];
+const allowedOrigins = [
+  "http://13.235.1.46:3000",
+  "https://admin.finsang.in",
+  "http://localhost:3000",
+];
 
 app.use(
   cors({
@@ -93,6 +98,7 @@ app.use("/api/shop-products", shopProductRoutes);
 app.use("/api/qrcode", qrCodeRoutes);
 app.use("/api/finsangmart", finsangMartRoutes);
 app.use("/api/banners", bannerRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 // 404 handler
 app.use("*", (req, res) => {

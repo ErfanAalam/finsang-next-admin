@@ -1,11 +1,6 @@
-'use client';
+"use client";
 
-import {
-  Box,
-  Typography,
-  Paper,
-  Alert
-} from '@mui/material';
+import { Box, Typography, Paper, Alert } from "@mui/material";
 
 export default function SettingsPage() {
   return (
@@ -18,7 +13,7 @@ export default function SettingsPage() {
         <Alert severity="info" sx={{ mb: 2 }}>
           Settings management feature is coming soon!
         </Alert>
-        
+
         <Typography variant="body1" color="textSecondary">
           This section will allow you to:
         </Typography>
@@ -42,4 +37,4 @@ export default function SettingsPage() {
       </Paper>
     </Box>
   );
-} 
+}

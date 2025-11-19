@@ -16,10 +16,9 @@ import {
   IconButton,
   CircularProgress,
   Alert,
-  Tooltip,
-  Checkbox,
   FormControlLabel,
   Switch,
+  Snackbar,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -153,6 +152,18 @@ const ProductsTab: React.FC = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // Validation errors state
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
+
+  // Toast state
+  const [toast, setToast] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({ open: false, message: "", severity: "success" });
+
   // Fetch product types on mount
   useEffect(() => {
     fetchProductTypes();
@@ -205,13 +216,19 @@ const ProductsTab: React.FC = () => {
 
     try {
       await apiClient.createProductType(newProductType.trim());
+      setToast({
+        open: true,
+        message: "Category added successfully!",
+        severity: "success",
+      });
       setCategorySuccess("Category added successfully!");
       setNewProductType("");
       fetchProductTypes();
     } catch (error) {
-      setCategoryError(
-        error instanceof Error ? error.message : "Failed to add category"
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to add category";
+      setToast({ open: true, message: errorMessage, severity: "error" });
+      setCategoryError(errorMessage);
     } finally {
       setCategoryLoading(false);
     }
@@ -226,12 +243,18 @@ const ProductsTab: React.FC = () => {
 
     try {
       await apiClient.deleteProductType(typeToDelete);
+      setToast({
+        open: true,
+        message: "Category deleted successfully!",
+        severity: "success",
+      });
       setCategorySuccess("Category deleted successfully!");
       fetchProductTypes();
     } catch (error) {
-      setCategoryError(
-        error instanceof Error ? error.message : "Failed to delete category"
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to delete category";
+      setToast({ open: true, message: errorMessage, severity: "error" });
+      setCategoryError(errorMessage);
     }
   };
 
@@ -244,12 +267,18 @@ const ProductsTab: React.FC = () => {
 
     try {
       await apiClient.deleteProduct(productId);
+      setToast({
+        open: true,
+        message: "Product deleted successfully!",
+        severity: "success",
+      });
       setSuccess("Product deleted successfully!");
       fetchProducts();
     } catch (error) {
-      setProductsError(
-        error instanceof Error ? error.message : "Failed to delete product"
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to delete product";
+      setToast({ open: true, message: errorMessage, severity: "error" });
+      setProductsError(errorMessage);
     }
   };
 
@@ -337,9 +366,51 @@ const ProductsTab: React.FC = () => {
     }
   };
 
+  // Validation functions
+  const validateField = (field: string, value: string): string => {
+    switch (field) {
+      case "card_name":
+        if (!value.trim()) return "Card name is required";
+        if (value.length > 100)
+          return "Card name must be less than 100 characters";
+        break;
+      case "bank_name":
+        if (value && value.length > 50)
+          return "Bank name must be less than 50 characters";
+        break;
+      case "youtube_url":
+        if (value && !value.match(/^https?:\/\/.+/))
+          return "Please enter a valid URL";
+        break;
+      case "application_process_url":
+        if (value && !value.match(/^https?:\/\/.+/))
+          return "Please enter a valid URL";
+        break;
+      case "joining_fees":
+      case "renewal_fees":
+        if (value && value.length > 20)
+          return "Fee must be less than 20 characters";
+        break;
+      case "payout_str":
+        if (value && value.length > 200)
+          return "Payout string must be less than 200 characters";
+        break;
+    }
+    return "";
+  };
+
   // Handle form field changes
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+    // Real-time validation for string fields
+    if (typeof value === "string") {
+      const error = validateField(field, value);
+      setValidationErrors((prev) => ({
+        ...prev,
+        [field]: error,
+      }));
+    }
   };
 
   const handleArrayFieldChange = (
@@ -347,6 +418,23 @@ const ProductsTab: React.FC = () => {
     index: number,
     value: string
   ) => {
+    // Validate array field length
+    if (value.length > 200) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        [`${field}_${index}`]: `${
+          field === "benefits" ? "Benefit" : "Term"
+        } must be less than 200 characters`,
+      }));
+      return;
+    } else {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[`${field}_${index}`];
+        return newErrors;
+      });
+    }
+
     setFormData((prev) => ({
       ...prev,
       [field]: prev[field].map((item, i) => (i === index ? value : item)),
@@ -388,6 +476,23 @@ const ProductsTab: React.FC = () => {
     field: "title" | "description",
     value: string
   ) => {
+    const maxLength = field === "title" ? 100 : 300;
+    if (value.length > maxLength) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        [`cardBenefit_${index}_${field}`]: `${
+          field === "title" ? "Title" : "Description"
+        } must be less than ${maxLength} characters`,
+      }));
+      return;
+    } else {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[`cardBenefit_${index}_${field}`];
+        return newErrors;
+      });
+    }
+
     setCardBenefits((prev) =>
       prev.map((benefit, i) =>
         i === index ? { ...benefit, [field]: value } : benefit
@@ -424,6 +529,23 @@ const ProductsTab: React.FC = () => {
     field: "question" | "answer",
     value: string
   ) => {
+    const maxLength = field === "question" ? 200 : 500;
+    if (value.length > maxLength) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        [`faq_${index}_${field}`]: `${
+          field === "question" ? "Question" : "Answer"
+        } must be less than ${maxLength} characters`,
+      }));
+      return;
+    } else {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[`faq_${index}_${field}`];
+        return newErrors;
+      });
+    }
+
     setFaqsData((prev) =>
       prev.map((faq, i) => (i === index ? { ...faq, [field]: value } : faq))
     );
@@ -444,11 +566,39 @@ const ProductsTab: React.FC = () => {
     setError("");
     setSuccess("");
 
-    if (!formData.type || !formData.card_name) {
-      setError("Type and card name are required");
+    // Validate all fields
+    const errors: Record<string, string> = {};
+
+    if (!formData.type) errors.type = "Product type is required";
+    if (!formData.card_name.trim()) errors.card_name = "Card name is required";
+
+    // Validate other fields
+    Object.entries(formData).forEach(([key, value]) => {
+      if (typeof value === "string") {
+        const error = validateField(key, value);
+        if (error) errors[key] = error;
+      }
+    });
+
+    // Update validation errors and check if there are any
+    const allErrors = { ...validationErrors, ...errors };
+    // Filter out empty error messages
+    const nonEmptyErrors = Object.fromEntries(
+      Object.entries(allErrors).filter(
+        ([key, value]) => value && value.trim() !== ""
+      )
+    );
+
+    setValidationErrors(allErrors);
+
+    if (Object.keys(nonEmptyErrors).length > 0) {
+      console.log("Validation errors:", nonEmptyErrors);
+      setError("Please fix all validation errors before submitting");
       setLoading(false);
       return;
     }
+
+    console.log("Validation passed, proceeding with API call...");
 
     try {
       let imageUrl = editingProduct?.Image_url || "";
@@ -509,14 +659,35 @@ const ProductsTab: React.FC = () => {
 
       if (editingProduct) {
         // Update existing product
-        // console.log('Updating product with data:', JSON.stringify(productData, null, 2));
-        await apiClient.updateProduct(editingProduct.id, productData);
+        console.log(
+          "Updating product with data:",
+          JSON.stringify(productData, null, 2)
+        );
+        const result = await apiClient.updateProduct(
+          editingProduct.id,
+          productData
+        );
+        console.log("Update result:", result);
+        setToast({
+          open: true,
+          message: "Product updated successfully!",
+          severity: "success",
+        });
         setSuccess("Product updated successfully!");
         setEditingProduct(null);
       } else {
         // Create new product
-        // console.log('Creating product with data:', JSON.stringify(productData, null, 2));
-        await apiClient.createProduct(productData);
+        console.log(
+          "Creating product with data:",
+          JSON.stringify(productData, null, 2)
+        );
+        const result = await apiClient.createProduct(productData);
+        console.log("Create result:", result);
+        setToast({
+          open: true,
+          message: "Product created successfully!",
+          severity: "success",
+        });
         setSuccess("Product created successfully!");
       }
 
@@ -524,9 +695,11 @@ const ProductsTab: React.FC = () => {
       resetForm();
       fetchProducts();
     } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Failed to save product"
-      );
+      console.error("API Error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to save product";
+      setToast({ open: true, message: errorMessage, severity: "error" });
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -559,6 +732,7 @@ const ProductsTab: React.FC = () => {
     });
     setFaqsData([{ question: "", answer: "" }]);
     setSelectedFile(null);
+    setValidationErrors({});
   };
 
   return (
@@ -594,377 +768,592 @@ const ProductsTab: React.FC = () => {
 
             <Box component="form" onSubmit={handleSubmit}>
               {/* Basic Information */}
-              <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
-                Basic Information
-              </Typography>
-
-              <TextField
-                fullWidth
-                select
-                label="Product Type"
-                value={formData.type}
-                onChange={(e) => handleInputChange("type", e.target.value)}
-                margin="normal"
-                required
+              <Typography
+                variant="h6"
+                sx={{ mt: 2, mb: 2, color: "primary.main", fontWeight: 600 }}
               >
-                {productTypes.map((type) => (
-                  <MenuItem key={type.id} value={type.type}>
-                    {type.type}
-                  </MenuItem>
-                ))}
-              </TextField>
-
-              <TextField
-                fullWidth
-                label="Card Name"
-                value={formData.card_name}
-                onChange={(e) => handleInputChange("card_name", e.target.value)}
-                margin="normal"
-                required
-              />
-
-              <TextField
-                fullWidth
-                label="Bank Name"
-                value={formData.bank_name}
-                onChange={(e) => handleInputChange("bank_name", e.target.value)}
-                margin="normal"
-              />
-
-              <TextField
-                fullWidth
-                label="YouTube URL"
-                value={formData.youtube_url}
-                onChange={(e) =>
-                  handleInputChange("youtube_url", e.target.value)
-                }
-                margin="normal"
-              />
-
-              <TextField
-                fullWidth
-                label="Application Process URL"
-                value={formData.application_process_url}
-                onChange={(e) =>
-                  handleInputChange("application_process_url", e.target.value)
-                }
-                margin="normal"
-              />
-
-              {/* Fees */}
-              <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-                Fees
+                📋 Basic Information
               </Typography>
+              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+                <TextField
+                  fullWidth
+                  select
+                  label="Product Type"
+                  value={formData.type}
+                  onChange={(e) => handleInputChange("type", e.target.value)}
+                  margin="normal"
+                  required
+                  error={!!validationErrors.type}
+                  helperText={validationErrors.type || "Select a product type"}
+                >
+                  {productTypes.map((type) => (
+                    <MenuItem key={type.id} value={type.type}>
+                      {type.type}
+                    </MenuItem>
+                  ))}
+                </TextField>
 
-              <TextField
-                fullWidth
-                label="Joining Fees"
-                value={formData.joining_fees}
-                onChange={(e) =>
-                  handleInputChange("joining_fees", e.target.value)
-                }
-                margin="normal"
-              />
-
-              <TextField
-                fullWidth
-                label="Renewal Fees"
-                value={formData.renewal_fees}
-                onChange={(e) =>
-                  handleInputChange("renewal_fees", e.target.value)
-                }
-                margin="normal"
-              />
-
-              <TextField
-                fullWidth
-                label="Payout String"
-                value={formData.payout_str}
-                onChange={(e) =>
-                  handleInputChange("payout_str", e.target.value)
-                }
-                margin="normal"
-              />
-
-              {/* Image Upload */}
-              <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-                Product Image
-              </Typography>
-              <Box sx={{ mb: 2 }}>
-                <input
-                  accept="image/*"
-                  style={{ display: "none" }}
-                  id="product-image-upload"
-                  type="file"
-                  onChange={handleFileSelect}
+                <TextField
+                  fullWidth
+                  label="Card Name"
+                  value={formData.card_name}
+                  onChange={(e) =>
+                    handleInputChange("card_name", e.target.value)
+                  }
+                  margin="normal"
+                  required
+                  error={!!validationErrors.card_name}
+                  helperText={
+                    validationErrors.card_name ||
+                    `${formData.card_name.length}/100 characters`
+                  }
+                  inputProps={{ maxLength: 100 }}
                 />
-                <label htmlFor="product-image-upload">
-                  <Button
-                    variant="outlined"
-                    component="span"
-                    disabled={uploadingImage}
-                    sx={{ mr: 2 }}
-                  >
-                    {uploadingImage ? (
-                      <CircularProgress size={20} />
-                    ) : (
-                      "Upload Image"
-                    )}
-                  </Button>
-                </label>
-                {selectedFile && (
-                  <Typography variant="body2" color="text.secondary">
-                    Selected: {selectedFile.name}
-                  </Typography>
-                )}
-                {editingProduct?.Image_url && !selectedFile && (
-                  <Typography variant="body2" color="text.secondary">
-                    Current image: {editingProduct.Image_url}
-                  </Typography>
-                )}
+
+                <TextField
+                  fullWidth
+                  label="Bank Name"
+                  value={formData.bank_name}
+                  onChange={(e) =>
+                    handleInputChange("bank_name", e.target.value)
+                  }
+                  margin="normal"
+                  error={!!validationErrors.bank_name}
+                  helperText={
+                    validationErrors.bank_name ||
+                    `${formData.bank_name.length}/50 characters`
+                  }
+                  inputProps={{ maxLength: 50 }}
+                />
+
+                <TextField
+                  fullWidth
+                  label="YouTube URL"
+                  value={formData.youtube_url}
+                  onChange={(e) =>
+                    handleInputChange("youtube_url", e.target.value)
+                  }
+                  margin="normal"
+                  error={!!validationErrors.youtube_url}
+                  helperText={
+                    validationErrors.youtube_url ||
+                    "Enter a valid YouTube URL (https://...)"
+                  }
+                  placeholder="https://youtube.com/watch?v=..."
+                />
+
+                <TextField
+                  fullWidth
+                  label="Application Process URL"
+                  value={formData.application_process_url}
+                  onChange={(e) =>
+                    handleInputChange("application_process_url", e.target.value)
+                  }
+                  margin="normal"
+                  error={!!validationErrors.application_process_url}
+                  helperText={
+                    validationErrors.application_process_url ||
+                    "Enter a valid application URL (https://...)"
+                  }
+                  placeholder="https://example.com/apply"
+                />
               </Box>
 
-              {/* Popular Product Toggle */}
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={formData.popular_product}
-                    onChange={(e) =>
-                      handleInputChange("popular_product", e.target.checked)
-                    }
+              {/* Fees */}
+              <Typography
+                variant="h6"
+                sx={{ mt: 3, mb: 2, color: "primary.main", fontWeight: 600 }}
+              >
+                💰 Fees Information
+              </Typography>
+              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+                <TextField
+                  fullWidth
+                  label="Joining Fees"
+                  value={formData.joining_fees}
+                  onChange={(e) =>
+                    handleInputChange("joining_fees", e.target.value)
+                  }
+                  margin="normal"
+                  error={!!validationErrors.joining_fees}
+                  helperText={
+                    validationErrors.joining_fees ||
+                    `${formData.joining_fees.length}/20 characters`
+                  }
+                  inputProps={{ maxLength: 20 }}
+                  placeholder="₹500 or Free"
+                />
+
+                <TextField
+                  fullWidth
+                  label="Renewal Fees"
+                  value={formData.renewal_fees}
+                  onChange={(e) =>
+                    handleInputChange("renewal_fees", e.target.value)
+                  }
+                  margin="normal"
+                  error={!!validationErrors.renewal_fees}
+                  helperText={
+                    validationErrors.renewal_fees ||
+                    `${formData.renewal_fees.length}/20 characters`
+                  }
+                  inputProps={{ maxLength: 20 }}
+                  placeholder="₹500 annually or Free"
+                />
+
+                <TextField
+                  fullWidth
+                  label="Payout String"
+                  value={formData.payout_str}
+                  onChange={(e) =>
+                    handleInputChange("payout_str", e.target.value)
+                  }
+                  margin="normal"
+                  error={!!validationErrors.payout_str}
+                  helperText={
+                    validationErrors.payout_str ||
+                    `${formData.payout_str.length}/200 characters`
+                  }
+                  inputProps={{ maxLength: 200 }}
+                  multiline
+                  rows={2}
+                  placeholder="Brief description of payout structure"
+                />
+              </Box>
+
+              {/* Image Upload */}
+              <Typography
+                variant="h6"
+                sx={{ mt: 3, mb: 2, color: "primary.main", fontWeight: 600 }}
+              >
+                🖼️ Product Image
+              </Typography>
+              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+                <Box sx={{ mb: 2 }}>
+                  <input
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    id="product-image-upload"
+                    type="file"
+                    onChange={handleFileSelect}
                   />
-                }
-                label="Popular Product"
-                sx={{ mb: 2 }}
-              />
+                  <label htmlFor="product-image-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      disabled={uploadingImage}
+                      sx={{ mr: 2 }}
+                    >
+                      {uploadingImage ? (
+                        <CircularProgress size={20} />
+                      ) : (
+                        "Upload Image"
+                      )}
+                    </Button>
+                  </label>
+
+                  {/* Image Preview */}
+                  {(selectedFile || editingProduct?.Image_url) && (
+                    <Box
+                      sx={{
+                        mt: 2,
+                        p: 2,
+                        border: "1px dashed",
+                        borderColor: "grey.300",
+                        borderRadius: 2,
+                        bgcolor: "grey.50",
+                      }}
+                    >
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ mb: 1, fontWeight: 600 }}
+                      >
+                        Image Preview:
+                      </Typography>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                      >
+                        <Box
+                          component="img"
+                          src={
+                            selectedFile
+                              ? URL.createObjectURL(selectedFile)
+                              : editingProduct?.Image_url
+                          }
+                          alt="Product preview"
+                          sx={{
+                            width: 120,
+                            height: 80,
+                            objectFit: "cover",
+                            borderRadius: 2,
+                            border: "2px solid",
+                            borderColor: "primary.main",
+                            boxShadow: 2,
+                          }}
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                        <Box>
+                          <Typography
+                            variant="body2"
+                            color="text.primary"
+                            sx={{ fontWeight: 500 }}
+                          >
+                            {selectedFile ? selectedFile.name : "Current Image"}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {selectedFile
+                              ? `Size: ${(selectedFile.size / 1024).toFixed(
+                                  1
+                                )} KB`
+                              : "Uploaded image"}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Popular Product Toggle */}
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={formData.popular_product}
+                      onChange={(e) =>
+                        handleInputChange("popular_product", e.target.checked)
+                      }
+                    />
+                  }
+                  label="Popular Product"
+                  sx={{ mb: 2 }}
+                />
+              </Box>
 
               {/* Benefits */}
-              <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-                Benefits
-              </Typography>
-              {formData.benefits.map((benefit, index) => (
-                <Box key={index} sx={{ display: "flex", gap: 1, mb: 1 }}>
-                  <TextField
-                    fullWidth
-                    label={`Benefit ${index + 1}`}
-                    value={benefit}
-                    onChange={(e) =>
-                      handleArrayFieldChange("benefits", index, e.target.value)
-                    }
-                  />
-                  <IconButton
-                    onClick={() => removeArrayFieldItem("benefits", index)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
-              ))}
-              <Button
-                onClick={() => addArrayFieldItem("benefits")}
-                sx={{ mb: 2 }}
+              <Typography
+                variant="h6"
+                sx={{ mt: 3, mb: 2, color: "primary.main", fontWeight: 600 }}
               >
-                Add Benefit
-              </Button>
+                ✨ Product Benefits
+              </Typography>
+              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+                {formData.benefits.map((benefit, index) => (
+                  <Box key={index} sx={{ display: "flex", gap: 1, mb: 1 }}>
+                    <TextField
+                      fullWidth
+                      label={`Benefit ${index + 1}`}
+                      value={benefit}
+                      onChange={(e) =>
+                        handleArrayFieldChange(
+                          "benefits",
+                          index,
+                          e.target.value
+                        )
+                      }
+                      error={!!validationErrors[`benefits_${index}`]}
+                      helperText={
+                        validationErrors[`benefits_${index}`] ||
+                        `${benefit.length}/200 characters`
+                      }
+                      inputProps={{ maxLength: 200 }}
+                      placeholder="Enter product benefit"
+                    />
+                    <IconButton
+                      onClick={() => removeArrayFieldItem("benefits", index)}
+                      disabled={formData.benefits.length === 1}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                ))}
+                <Button
+                  onClick={() => addArrayFieldItem("benefits")}
+                  sx={{ mb: 2 }}
+                >
+                  Add Benefit
+                </Button>
+              </Box>
 
               {/* Terms */}
-              <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-                Terms
+              <Typography
+                variant="h6"
+                sx={{ mt: 3, mb: 2, color: "primary.main", fontWeight: 600 }}
+              >
+                📋 Terms & Conditions
               </Typography>
-              {formData.terms.map((term, index) => (
-                <Box key={index} sx={{ display: "flex", gap: 1, mb: 1 }}>
-                  <TextField
-                    fullWidth
-                    label={`Term ${index + 1}`}
-                    value={term}
-                    onChange={(e) =>
-                      handleArrayFieldChange("terms", index, e.target.value)
-                    }
-                  />
-                  <IconButton
-                    onClick={() => removeArrayFieldItem("terms", index)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
-              ))}
-              <Button onClick={() => addArrayFieldItem("terms")} sx={{ mb: 2 }}>
-                Add Term
-              </Button>
+              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+                {formData.terms.map((term, index) => (
+                  <Box key={index} sx={{ display: "flex", gap: 1, mb: 1 }}>
+                    <TextField
+                      fullWidth
+                      label={`Term ${index + 1}`}
+                      value={term}
+                      onChange={(e) =>
+                        handleArrayFieldChange("terms", index, e.target.value)
+                      }
+                      error={!!validationErrors[`terms_${index}`]}
+                      helperText={
+                        validationErrors[`terms_${index}`] ||
+                        `${term.length}/200 characters`
+                      }
+                      inputProps={{ maxLength: 200 }}
+                      placeholder="Enter terms and conditions"
+                    />
+                    <IconButton
+                      onClick={() => removeArrayFieldItem("terms", index)}
+                      disabled={formData.terms.length === 1}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                ))}
+                <Button
+                  onClick={() => addArrayFieldItem("terms")}
+                  sx={{ mb: 2 }}
+                >
+                  Add Term
+                </Button>
+              </Box>
 
               {/* Payout Structure */}
-              <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-                Payout Structure
+              <Typography
+                variant="h6"
+                sx={{ mt: 3, mb: 2, color: "primary.main", fontWeight: 600 }}
+              >
+                💵 Payout Structure
               </Typography>
-              {payoutSections.map((section) => (
-                <Box key={section} sx={{ mb: 3 }}>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{ mb: 1, textTransform: "capitalize" }}
-                  >
-                    {section}
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns:
-                        "repeat(auto-fit, minmax(200px, 1fr))",
-                      gap: 2,
-                    }}
-                  >
-                    {payoutLevels.map((level) => (
-                      <TextField
-                        key={level}
-                        label={level.charAt(0).toUpperCase() + level.slice(1)}
-                        value={payoutData[section][level]}
-                        onChange={(e) =>
-                          handlePayoutChange(section, level, e.target.value)
-                        }
-                        type="number"
-                        inputProps={{ step: 0.01 }}
-                      />
-                    ))}
+              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+                {payoutSections.map((section) => (
+                  <Box key={section} sx={{ mb: 3 }}>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ mb: 1, textTransform: "capitalize" }}
+                    >
+                      {section}
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(200px, 1fr))",
+                        gap: 2,
+                      }}
+                    >
+                      {payoutLevels.map((level) => (
+                        <TextField
+                          key={level}
+                          label={level.charAt(0).toUpperCase() + level.slice(1)}
+                          value={payoutData[section][level]}
+                          onChange={(e) =>
+                            handlePayoutChange(section, level, e.target.value)
+                          }
+                          type="number"
+                          inputProps={{ step: 0.01 }}
+                        />
+                      ))}
+                    </Box>
                   </Box>
-                </Box>
-              ))}
+                ))}
+              </Box>
 
               {/* Card Benefits */}
-              <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-                Card Benefits
+              <Typography
+                variant="h6"
+                sx={{ mt: 3, mb: 2, color: "primary.main", fontWeight: 600 }}
+              >
+                🎁 Card Benefits
               </Typography>
-              {cardBenefits.map((benefit, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    mb: 2,
-                    p: 2,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 1,
-                  }}
-                >
-                  <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
-                    <TextField
-                      fullWidth
-                      label="Benefit Title"
-                      value={benefit.title}
-                      onChange={(e) =>
-                        handleCardBenefitChange(index, "title", e.target.value)
-                      }
-                    />
-                    <IconButton onClick={() => removeCardBenefit(index)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </Box>
-                  <TextField
-                    fullWidth
-                    label="Benefit Description"
-                    value={benefit.description}
-                    onChange={(e) =>
-                      handleCardBenefitChange(
-                        index,
-                        "description",
-                        e.target.value
-                      )
-                    }
-                    multiline
-                    rows={2}
-                  />
-                </Box>
-              ))}
-              <Button onClick={addCardBenefit} sx={{ mb: 2 }}>
-                Add Card Benefit
-              </Button>
-
-              {/* Eligibility */}
-              <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-                Eligibility
-              </Typography>
-              {eligibilityTypes.map((type) => (
-                <Box
-                  key={type}
-                  sx={{
-                    mb: 3,
-                    p: 2,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 1,
-                  }}
-                >
-                  <Typography
-                    variant="subtitle1"
-                    sx={{ mb: 1, textTransform: "capitalize" }}
-                  >
-                    {type.replace("_", " ")}
-                  </Typography>
+              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+                {cardBenefits.map((benefit, index) => (
                   <Box
+                    key={index}
                     sx={{
-                      display: "grid",
-                      gridTemplateColumns:
-                        "repeat(auto-fit, minmax(200px, 1fr))",
-                      gap: 2,
+                      mb: 2,
+                      p: 2,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      borderRadius: 1,
                     }}
                   >
-                    <TextField
-                      label="Age"
-                      value={eligibilityData[type].age}
-                      onChange={(e) =>
-                        handleEligibilityChange(type, "age", e.target.value)
-                      }
-                    />
-                    <TextField
-                      label="Income"
-                      value={eligibilityData[type].income}
-                      onChange={(e) =>
-                        handleEligibilityChange(type, "income", e.target.value)
-                      }
-                    />
-                  </Box>
-                </Box>
-              ))}
-
-              {/* FAQs */}
-              <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-                Frequently Asked Questions
-              </Typography>
-              {faqsData.map((faq, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    mb: 2,
-                    p: 2,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 1,
-                  }}
-                >
-                  <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
+                    <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
+                      <TextField
+                        fullWidth
+                        label="Benefit Title"
+                        value={benefit.title}
+                        onChange={(e) =>
+                          handleCardBenefitChange(
+                            index,
+                            "title",
+                            e.target.value
+                          )
+                        }
+                        error={!!validationErrors[`cardBenefit_${index}_title`]}
+                        helperText={
+                          validationErrors[`cardBenefit_${index}_title`] ||
+                          `${benefit.title.length}/100 characters`
+                        }
+                        inputProps={{ maxLength: 100 }}
+                        placeholder="Enter benefit title"
+                      />
+                      <IconButton
+                        onClick={() => removeCardBenefit(index)}
+                        disabled={cardBenefits.length === 1}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Box>
                     <TextField
                       fullWidth
-                      label="Question"
-                      value={faq.question}
+                      label="Benefit Description"
+                      value={benefit.description}
                       onChange={(e) =>
-                        handleFaqChange(index, "question", e.target.value)
+                        handleCardBenefitChange(
+                          index,
+                          "description",
+                          e.target.value
+                        )
                       }
+                      multiline
+                      rows={2}
+                      error={
+                        !!validationErrors[`cardBenefit_${index}_description`]
+                      }
+                      helperText={
+                        validationErrors[`cardBenefit_${index}_description`] ||
+                        `${benefit.description.length}/300 characters`
+                      }
+                      inputProps={{ maxLength: 300 }}
+                      placeholder="Describe the benefit in detail"
                     />
-                    <IconButton onClick={() => removeFaq(index)}>
-                      <DeleteIcon />
-                    </IconButton>
                   </Box>
-                  <TextField
-                    fullWidth
-                    label="Answer"
-                    value={faq.answer}
-                    onChange={(e) =>
-                      handleFaqChange(index, "answer", e.target.value)
-                    }
-                    multiline
-                    rows={3}
-                  />
-                </Box>
-              ))}
-              <Button onClick={addFaq} sx={{ mb: 2 }}>
-                Add FAQ
-              </Button>
+                ))}
+                <Button onClick={addCardBenefit} sx={{ mb: 2 }}>
+                  Add Card Benefit
+                </Button>
+              </Box>
+
+              {/* Eligibility */}
+              <Typography
+                variant="h6"
+                sx={{ mt: 3, mb: 2, color: "primary.main", fontWeight: 600 }}
+              >
+                ✅ Eligibility Criteria
+              </Typography>
+              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+                {eligibilityTypes.map((type) => (
+                  <Box
+                    key={type}
+                    sx={{
+                      mb: 3,
+                      p: 2,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      borderRadius: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ mb: 1, textTransform: "capitalize" }}
+                    >
+                      {type.replace("_", " ")}
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(200px, 1fr))",
+                        gap: 2,
+                      }}
+                    >
+                      <TextField
+                        label="Age"
+                        value={eligibilityData[type].age}
+                        onChange={(e) =>
+                          handleEligibilityChange(type, "age", e.target.value)
+                        }
+                      />
+                      <TextField
+                        label="Income"
+                        value={eligibilityData[type].income}
+                        onChange={(e) =>
+                          handleEligibilityChange(
+                            type,
+                            "income",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+
+              {/* FAQs */}
+              <Typography
+                variant="h6"
+                sx={{ mt: 3, mb: 2, color: "primary.main", fontWeight: 600 }}
+              >
+                ❓ Frequently Asked Questions
+              </Typography>
+              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+                {faqsData.map((faq, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      mb: 2,
+                      p: 2,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      borderRadius: 1,
+                    }}
+                  >
+                    <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
+                      <TextField
+                        fullWidth
+                        label="Question"
+                        value={faq.question}
+                        onChange={(e) =>
+                          handleFaqChange(index, "question", e.target.value)
+                        }
+                        error={!!validationErrors[`faq_${index}_question`]}
+                        helperText={
+                          validationErrors[`faq_${index}_question`] ||
+                          `${faq.question.length}/200 characters`
+                        }
+                        inputProps={{ maxLength: 200 }}
+                        placeholder="Enter frequently asked question"
+                      />
+                      <IconButton
+                        onClick={() => removeFaq(index)}
+                        disabled={faqsData.length === 1}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Box>
+                    <TextField
+                      fullWidth
+                      label="Answer"
+                      value={faq.answer}
+                      onChange={(e) =>
+                        handleFaqChange(index, "answer", e.target.value)
+                      }
+                      multiline
+                      rows={3}
+                      error={!!validationErrors[`faq_${index}_answer`]}
+                      helperText={
+                        validationErrors[`faq_${index}_answer`] ||
+                        `${faq.answer.length}/500 characters`
+                      }
+                      inputProps={{ maxLength: 500 }}
+                      placeholder="Provide detailed answer to the question"
+                    />
+                  </Box>
+                ))}
+                <Button onClick={addFaq} sx={{ mb: 2 }}>
+                  Add FAQ
+                </Button>
+              </Box>
 
               <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
                 <Button
@@ -1029,6 +1418,14 @@ const ProductsTab: React.FC = () => {
                 onChange={(e) => setNewProductType(e.target.value)}
                 margin="normal"
                 required
+                error={newProductType.length > 50}
+                helperText={
+                  newProductType.length > 50
+                    ? "Category name must be less than 50 characters"
+                    : `${newProductType.length}/50 characters`
+                }
+                inputProps={{ maxLength: 50 }}
+                placeholder="Enter category name (e.g., Credit Cards, Loans)"
               />
 
               <Button
@@ -1182,6 +1579,22 @@ const ProductsTab: React.FC = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Toast Notification */}
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={4000}
+        onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+          severity={toast.severity}
+          sx={{ width: "100%" }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
