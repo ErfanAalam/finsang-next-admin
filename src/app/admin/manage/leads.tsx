@@ -715,7 +715,7 @@ export default function LeadsManagement() {
           <TableContainer>
             <Table>
               <TableHead>
-                <TableRow sx={{ backgroundColor: "#f8f9fa" }}>
+                <TableRow sx={{ backgroundColor: "action.selected" }}>
                   <TableCell sx={{ fontWeight: 600, fontSize: "0.875rem" }}>
                     User Details
                   </TableCell>
@@ -745,7 +745,7 @@ export default function LeadsManagement() {
                   return (
                     <TableRow
                       key={lead.id}
-                      sx={{ "&:hover": { backgroundColor: "#f8f9fa" } }}
+                      sx={{ "&:hover": { backgroundColor: "action.hover" } }}
                     >
                       <TableCell>
                         <Box
@@ -917,7 +917,7 @@ export default function LeadsManagement() {
                                 bgcolor: "#e8f5e8",
                                 color: "#2e7d32",
                                 "&:hover": {
-                                  bgcolor: "#c8e6c9",
+                                  bgcolor: "success.light",
                                 },
                               }}
                             >
@@ -932,7 +932,7 @@ export default function LeadsManagement() {
                                 bgcolor: "#e3f2fd",
                                 color: "#1565c0",
                                 "&:hover": {
-                                  bgcolor: "#bbdefb",
+                                  bgcolor: "primary.light",
                                 },
                               }}
                             >
@@ -1112,8 +1112,8 @@ export default function LeadsManagement() {
                         borderRadius: 2,
                         fontSize: "0.75rem",
                         "&:hover": {
-                          bgcolor: "#e8f5e8",
-                          borderColor: "#2e7d32",
+                          bgcolor: "success.light",
+                          borderColor: "success.main",
                         },
                       }}
                     >
@@ -1130,8 +1130,8 @@ export default function LeadsManagement() {
                         borderRadius: 2,
                         fontSize: "0.75rem",
                         "&:hover": {
-                          bgcolor: "#e3f2fd",
-                          borderColor: "#1565c0",
+                          bgcolor: "primary.light",
+                          borderColor: "primary.main",
                         },
                       }}
                     >
@@ -1197,17 +1197,24 @@ export default function LeadsManagement() {
       >
         <DialogTitle
           sx={{
-            pb: 1,
             bgcolor: "#C89116",
             color: "white",
           }}
         >
           Edit Lead Status
         </DialogTitle>
-        <DialogContent sx={{ pt: 3 }}>
+        <DialogContent sx={{ mt: 4 }}>
           {editDialog.lead && (
             <Box>
-              <Card sx={{ mb: 3, bgcolor: "#f8f9fa", borderRadius: 2 }}>
+              <Card
+                sx={{
+                  mb: 3,
+                  bgcolor: "background.default",
+                  border: 1,
+                  borderColor: "divider",
+                  borderRadius: 2,
+                }}
+              >
                 <CardContent sx={{ py: 2 }}>
                   <Typography
                     variant="body2"
@@ -1292,14 +1299,14 @@ export default function LeadsManagement() {
       >
         <DialogTitle
           sx={{
-            pb: 1,
+            pb: 2,
             bgcolor: "#C89116",
             color: "white",
           }}
         >
           Edit User Details
         </DialogTitle>
-        <DialogContent sx={{ pt: 3 }}>
+        <DialogContent sx={{ mt: 4 }}>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
             <TextField
               fullWidth

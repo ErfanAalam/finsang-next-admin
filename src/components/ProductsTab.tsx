@@ -774,7 +774,16 @@ const ProductsTab: React.FC = () => {
               >
                 📋 Basic Information
               </Typography>
-              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+              <Box
+                sx={{
+                  bgcolor: "background.default",
+                  border: 1,
+                  borderColor: "divider",
+                  p: 3,
+                  borderRadius: 2,
+                  mb: 3,
+                }}
+              >
                 <TextField
                   fullWidth
                   select
@@ -866,7 +875,16 @@ const ProductsTab: React.FC = () => {
               >
                 💰 Fees Information
               </Typography>
-              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+              <Box
+                sx={{
+                  bgcolor: "background.default",
+                  border: 1,
+                  borderColor: "divider",
+                  p: 3,
+                  borderRadius: 2,
+                  mb: 3,
+                }}
+              >
                 <TextField
                   fullWidth
                   label="Joining Fees"
@@ -928,7 +946,16 @@ const ProductsTab: React.FC = () => {
               >
                 🖼️ Product Image
               </Typography>
-              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+              <Box
+                sx={{
+                  bgcolor: "background.default",
+                  border: 1,
+                  borderColor: "divider",
+                  p: 3,
+                  borderRadius: 2,
+                  mb: 3,
+                }}
+              >
                 <Box sx={{ mb: 2 }}>
                   <input
                     accept="image/*"
@@ -961,7 +988,7 @@ const ProductsTab: React.FC = () => {
                         border: "1px dashed",
                         borderColor: "grey.300",
                         borderRadius: 2,
-                        bgcolor: "grey.50",
+                        bgcolor: "background.default",
                       }}
                     >
                       <Typography
@@ -1037,7 +1064,16 @@ const ProductsTab: React.FC = () => {
               >
                 ✨ Product Benefits
               </Typography>
-              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+              <Box
+                sx={{
+                  bgcolor: "background.default",
+                  border: 1,
+                  borderColor: "divider",
+                  p: 3,
+                  borderRadius: 2,
+                  mb: 3,
+                }}
+              >
                 {formData.benefits.map((benefit, index) => (
                   <Box key={index} sx={{ display: "flex", gap: 1, mb: 1 }}>
                     <TextField
@@ -1082,7 +1118,16 @@ const ProductsTab: React.FC = () => {
               >
                 📋 Terms & Conditions
               </Typography>
-              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+              <Box
+                sx={{
+                  bgcolor: "background.default",
+                  border: 1,
+                  borderColor: "divider",
+                  p: 3,
+                  borderRadius: 2,
+                  mb: 3,
+                }}
+              >
                 {formData.terms.map((term, index) => (
                   <Box key={index} sx={{ display: "flex", gap: 1, mb: 1 }}>
                     <TextField
@@ -1123,7 +1168,16 @@ const ProductsTab: React.FC = () => {
               >
                 💵 Payout Structure
               </Typography>
-              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+              <Box
+                sx={{
+                  bgcolor: "background.default",
+                  border: 1,
+                  borderColor: "divider",
+                  p: 3,
+                  borderRadius: 2,
+                  mb: 3,
+                }}
+              >
                 {payoutSections.map((section) => (
                   <Box key={section} sx={{ mb: 3 }}>
                     <Typography
@@ -1164,7 +1218,16 @@ const ProductsTab: React.FC = () => {
               >
                 🎁 Card Benefits
               </Typography>
-              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+              <Box
+                sx={{
+                  bgcolor: "background.default",
+                  border: 1,
+                  borderColor: "divider",
+                  p: 3,
+                  borderRadius: 2,
+                  mb: 3,
+                }}
+              >
                 {cardBenefits.map((benefit, index) => (
                   <Box
                     key={index}
@@ -1240,7 +1303,16 @@ const ProductsTab: React.FC = () => {
               >
                 ✅ Eligibility Criteria
               </Typography>
-              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+              <Box
+                sx={{
+                  bgcolor: "background.default",
+                  border: 1,
+                  borderColor: "divider",
+                  p: 3,
+                  borderRadius: 2,
+                  mb: 3,
+                }}
+              >
                 {eligibilityTypes.map((type) => (
                   <Box
                     key={type}
@@ -1296,7 +1368,16 @@ const ProductsTab: React.FC = () => {
               >
                 ❓ Frequently Asked Questions
               </Typography>
-              <Box sx={{ bgcolor: "grey.50", p: 3, borderRadius: 2, mb: 3 }}>
+              <Box
+                sx={{
+                  bgcolor: "background.default",
+                  border: 1,
+                  borderColor: "divider",
+                  p: 3,
+                  borderRadius: 2,
+                  mb: 3,
+                }}
+              >
                 {faqsData.map((faq, index) => (
                   <Box
                     key={index}
